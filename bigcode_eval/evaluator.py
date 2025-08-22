@@ -105,6 +105,18 @@ class Evaluator:
                 os.environ["HF_ALLOW_CODE_EVAL"] = "1"
             print("Evaluating generations...")
             results = task.process_results(generations, references)
+            
+            # Save detailed per-sample results if available
+            if isinstance(results, tuple) and len(results) == 2:
+                # Some tasks return (metrics, detailed_results)
+                metrics, detailed_results = results
+                # Save detailed results to file
+                detailed_results_path = os.path.dirname(self.args.metric_output_path) + f"/detailed_results_{task_name}.json"
+                with open(detailed_results_path, "w") as fp:
+                    json.dump(detailed_results, fp)
+                    print(f"Detailed results were saved at {detailed_results_path}")
+                return metrics
+            
             return results
 
     def save_json_files(
